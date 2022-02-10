@@ -113,11 +113,9 @@ private:
 	/** When the character reaches the top of a wall, if there is enough
 	 *  space he vaults on top, with a first movement straight up and
 	 *  then a second movement forward
-	 *  @param FirstLoc First movement location, usually just upwards
-	 *  @param SecondLoc Second movement location, usually it is equal to FirstLoc
-	 *  plus a small forward offset
+	 *  @param Location Position the character will move to
 	 */ 
-	void VaultUp(FVector FirstLoc, FVector SecondLoc);
+	void VaultUp(FVector Location);
 
 	/** Handles jump mechanics, with different behavior if the character is walking
 	 *  or if he is climbing a wall */

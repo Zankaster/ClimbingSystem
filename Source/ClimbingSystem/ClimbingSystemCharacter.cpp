@@ -162,9 +162,9 @@ bool AClimbingSystemCharacter::WallTrace(FHitResult& OutHit, FVector Start, FVec
 {
 	DrawDebugLine(GetWorld(), Start, End, Color, false, 0.3f, 0, 2.f);
 	return GetWorld()->SweepSingleByChannel(
-			OutHit, Start, End,
-			FQuat::Identity, ECollisionChannel::ECC_Visibility,
-			FCollisionShape::MakeBox(FVector(0.01f, 0.01f, 0.01f)));
+		OutHit, Start, End,
+		FQuat::Identity, ECollisionChannel::ECC_Visibility,
+		FCollisionShape::MakeBox(FVector(0.01f, 0.01f, 0.01f)));
 }
 
 void AClimbingSystemCharacter::ResetRotation()
@@ -254,23 +254,20 @@ void AClimbingSystemCharacter::WallClimbMovement(float Axis, FVector Direction,b
 		if(Direction == GetActorUpVector() && Axis > 0 && bClimbing)
 		{
 			Start1 = GetActorUpVector() * (GetCapsuleComponent()->GetScaledCapsuleHalfHeight()*2.f )+ GetActorLocation()
-			+GetActorForwardVector()*GetCapsuleComponent()->GetScaledCapsuleRadius()*2.f;
+				+GetActorForwardVector()*GetCapsuleComponent()->GetScaledCapsuleRadius()*2.f;
 			End1 = Start1;
 			FHitResult OutHitVault;
 			// If this capsule cast with the size of the character, does not find anything above it, the character will climb on top
 			DrawDebugLine(GetWorld(), Start1, End1, FColor::Green, false, 0.3f, 0, 2.f);
 			DrawDebugCapsule(GetWorld(),Start1,GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), GetCapsuleComponent()->GetScaledCapsuleRadius(),
-				FQuat::Identity,FColor::Emerald, false,2.f,3,1.f);
+			                 FQuat::Identity,FColor::Emerald, false,2.f,3,1.f);
 			if(!GetWorld()->SweepSingleByChannel(OutHitVault,Start1,End1,FQuat::Identity, ECollisionChannel::ECC_Visibility,
-								 FCollisionShape::MakeCapsule(GetCapsuleComponent()->GetScaledCapsuleRadius(), GetCapsuleComponent()->GetScaledCapsuleHalfHeight())))
+			                                     FCollisionShape::MakeCapsule(GetCapsuleComponent()->GetScaledCapsuleRadius(), GetCapsuleComponent()->GetScaledCapsuleHalfHeight())))
 			{
-				FVector FirstLoc, SecondLoc;
-				// SecondLoc is basically the position that has been checked to be free, where the character
-				// can move, while FirstLoc is that same position but with a small offset backwards, so that
-				// in VaulUp(), the character is moved first "Up", and then a bit forward
-				SecondLoc = Start1+ GetActorForwardVector()*30.f;
-				FirstLoc = SecondLoc +GetCapsuleComponent()->GetScaledCapsuleRadius() * -2.f * GetActorForwardVector();
-				VaultUp(FirstLoc, SecondLoc);
+				FVector Location;
+				// Location is is basically the position that has been checked to be free plus a small offset forward
+				Location = Start1+ GetActorForwardVector()*30.f +GetCapsuleComponent()->GetScaledCapsuleRadius() * -2.f * GetActorForwardVector();
+				VaultUp(Location);
 			}
 			else
 			{
@@ -293,19 +290,15 @@ void AClimbingSystemCharacter::JumpUpWall()
 	bCheckForApex = true;
 }
 
-void AClimbingSystemCharacter::VaultUp(FVector FirstLoc, FVector SecondLoc)
+void AClimbingSystemCharacter::VaultUp(FVector Location)
 {
 	DetachFromWall();
 	FLatentActionInfo LatentInfo;
 	LatentInfo.CallbackTarget = this;
 
-	// Move the character up, and then a bit forward to simulate the vault
-
-	UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), FirstLoc, GetActorRotation(),
-	                                      false, true, 0.5f, false, EMoveComponentAction::Move, LatentInfo);
-
-	/*UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), SecondLoc, GetActorRotation(),
-	                                      false, true, 0.35f, false, EMoveComponentAction::Move, LatentInfo);*/
+	// Move the character up
+	UKismetSystemLibrary::MoveComponentTo(GetCapsuleComponent(), Location, GetActorRotation(),
+	        false, true, 0.5f, false, EMoveComponentAction::Move, LatentInfo);
 }
 
 void AClimbingSystemCharacter::JumpStart()
